@@ -31,9 +31,11 @@
 2. **Integrate the Userscript:**
     * Download the [`Reddit_Comment_Expander.user.js`](https://github.com/amirthfultehrani/Reddit-Expand-Replies/raw/main/Reddit_Comment_Expander.user.js) file from this repository.
 
-    * Import it into your userscript manager (Tampermonkey, Violentmonkey, etc.).
+    * Import it into your userscript manager (Tampermonkey, Violentmonkey, etc.,).
 
     * Enable the userscript in your chosen extension.
+
+    * Toggle the button that appears in the bottom right corner of the screen to turn on/off the script.
 
 ---
 
