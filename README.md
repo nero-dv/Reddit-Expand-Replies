@@ -29,7 +29,7 @@
     * **Greasemonkey:**
         * [Firefox](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)
 2. **Integrate the Userscript:**
-    * Download the `Reddit_Comment_Expander.user.js` file from this repository.
+    * Download the [`Reddit_Comment_Expander.user.js`](https://github.com/amirthfultehrani/Reddit-Expand-Replies/raw/main/Reddit_Comment_Expander.user.js) file from this repository.
 
     * Import it into your userscript manager (Tampermonkey, Violentmonkey, etc.).
 
