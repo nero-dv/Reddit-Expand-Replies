@@ -1,55 +1,24 @@
 // ==UserScript==
-// @name         Expand All Reddit Replies (Toggleable)
-// @namespace    http://tampermonkey.net/
-// @version      1.1
-// @description  Toggleable auto-expand for "more replies" on Reddit posts with a floating button
-// @author       Amir Tehrani
-// @match        https://www.reddit.com/r/*/*
+// @name         Old Reddit - Load all comments
+// @namespace    URL
+// @version      0.1
+// @description  This script will load all comments on a Reddit page via async and sequential requests. This is useful for pages with a large number of comments that are not all loaded by default.
+// @author       nero-dv, inspired by amirthfultehrani
+// @match        *://*.reddit.com/*
 // @grant        none
-// @run-at       document-idle
 // ==/UserScript==
 
-(function() {
-    'use strict';
+(function () {
+  'use strict';
 
-    console.log("Tampermonkey script loaded");
+  // Inject CSS for the toggle button into the document head
+  const addStyle = (css) => {
+    const style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
+  };
 
-    let isExpanding = false;
-    let hasMoreButtons = true; // Track if there are potentially more buttons
-
-
-    function clickMoreRepliesButtons() {
-        if (!isExpanding || !hasMoreButtons) return; // Stop if not expanding or no more buttons
-
-        const moreRepliesButtons = document.querySelectorAll(
-            'faceplate-partial[loading="action"][src*="/svc/shreddit/more-comments/"] > div > button[type="button"]'
-        );
-
-        if (moreRepliesButtons.length === 0) {
-            hasMoreButtons = false; // No buttons found, assume no more
-            console.log("No more 'expand in place' buttons found.");
-            return;
-        }
-
-         console.log("Found", moreRepliesButtons.length, "'expand in place' buttons");
-
-
-        moreRepliesButtons.forEach(button => {
-            if (button.offsetParent !== null && !button.disabled) {
-               console.log("Clicking 'expand in place' button...");
-                button.click();
-            }
-        });
-    }
-
-
-        function addStyle(css) {
-        const style = document.createElement('style');
-        style.textContent = css;
-        document.head.appendChild(style);
-    }
-
-     addStyle(`
+  addStyle(`
         #toggleExpandButton {
             position: fixed;
             bottom: 20px;
@@ -83,65 +52,69 @@
         #toggleExpandButton.active:hover {
             background-color: #ff5722;
         }
-    `);
+      `);
 
-    function addToggleButton() {
-        const button = document.createElement('button');
-        button.id = 'toggleExpandButton';
-        button.textContent = 'Enable Auto-Expand';
-        button.addEventListener('click', toggleExpanding);
-        document.body.appendChild(button);
+  // Expand any elements with a [+] indicator
+  // const expanders = document.querySelectorAll('.tagline .expand');
+  // console.log(
+  //   expanders.length,
+  //   '[+] elements found. \n\t--> Expanding all hidden comments...'
+  // );
+
+  // for (const expander of expanders) {
+  //   if (expander.textContent.trim() === '[+]') {
+  //     expander.click();
+  //   }
+  // }
+
+  // Flag to control the expansion process
+  let expanding = false;
+
+  // Returns a promise that resolves after a random delay between min and max milliseconds
+  const randomDelay = (min, max) =>
+    new Promise((resolve) =>
+      setTimeout(resolve, Math.floor(Math.random() * (max - min) + min))
+    );
+
+  // Asynchronously click each "load more comments" button but wait a random
+  // time between 1000ms and 2500ms before clicking the next button
+  async function expandComments() {
+    const buttons = document.querySelectorAll('.sitetable .button');
+    console.log('Found', buttons.length, ' "load more comments" links');
+    let _iter = 0;
+
+    for (const button of buttons) {
+      if (!expanding) {
+        console.log('Stopping expansion process...');
+        break;
+      }
+      button.click();
+      console.log('Clicked button', ++_iter, 'of', buttons.length);
+      await randomDelay(1000, 2500);
     }
-
-    function toggleExpanding() {
-        isExpanding = !isExpanding;
-        hasMoreButtons = true; // Reset hasMoreButtons when toggling to enable again
-        const button = document.getElementById('toggleExpandButton');
-        button.textContent = isExpanding ? 'Disable Auto-Expand' : 'Enable Auto-Expand';
-        button.classList.toggle('active', isExpanding);
-        if (isExpanding) {
-            clickMoreRepliesButtons();
-        }
+    expanding = false;
+    const toggleButton = document.getElementById('toggleExpandButton');
+    if (toggleButton) {
+      toggleButton.classList.remove('active');
     }
+  }
 
-    function initScript() {
-        addToggleButton();
-
-      const commentsSection = document.querySelector('.ListingLayout-outerContainer');
-        if (commentsSection) {
-            const commentsObserver = new MutationObserver(() => {
-                if(isExpanding){
-                     clickMoreRepliesButtons();
-                }
-            });
-           commentsObserver.observe(commentsSection, { childList: true, subtree: true });
-
-           const moreCommentsButtonObserver = new MutationObserver(() => {
-               const viewMoreCommentsButton = document.querySelector('div.inline-block.mt-\\[2px\\].ml-px > faceplate-tracker > button');
-
-
-               if (viewMoreCommentsButton && isExpanding) {
-                 console.log("'View more comments' button found, enabling hasMoreButtons.");
-                 hasMoreButtons = true;
-               }
-           });
-            moreCommentsButtonObserver.observe(commentsSection, { childList: true, subtree: true });
-
-        }
-
-
-
-        window.addEventListener('scroll', () => {
-            setTimeout(clickMoreRepliesButtons, 2000);
-        });
+  // Toggle the expansion process and update the button's appearance
+  function toggleExpand() {
+    expanding = !expanding;
+    const toggleButton = document.getElementById('toggleExpandButton');
+    if (toggleButton) {
+      toggleButton.classList.toggle('active', expanding);
     }
-
-    if (document.readyState === 'complete') {
-        initScript();
-    } else {
-        window.addEventListener('load', initScript);
+    if (expanding) {
+      expandComments();
     }
+  }
 
-    setInterval(clickMoreRepliesButtons, 5000);
-
+  // Create and insert the toggle button into the page
+  const toggleButton = document.createElement('button');
+  toggleButton.id = 'toggleExpandButton';
+  toggleButton.textContent = 'Toggle Expand';
+  toggleButton.addEventListener('click', toggleExpand);
+  document.body.appendChild(toggleButton);
 })();
