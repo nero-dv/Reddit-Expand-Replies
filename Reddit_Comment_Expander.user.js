@@ -3,7 +3,7 @@
 // @namespace    URL
 // @version      0.1
 // @description  This script will load all comments on a Reddit page via async and sequential requests. This is useful for pages with a large number of comments that are not all loaded by default.
-// @author       nero-dv, inspired by amirthfultehrani
+// @author       amirthfultehrani, nero-dv
 // @match        *://*.reddit.com/*
 // @grant        none
 // ==/UserScript==
